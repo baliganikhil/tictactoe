@@ -34,6 +34,10 @@
 				<li>Currently you and your friend have to play on the same machine...</li>
 			</ol>
 
+			<p>
+				<a href="http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe">Based on this post... Read more about it here</a>
+			</p>
+
 			Note that subsequent moves depend on the previous move. For example
 
 			<p>&nbsp;</p>
@@ -44,9 +48,6 @@
 
 			<img src="images/2.png">
 
-			<p>
-				<a href="http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe">Based on this post... Read more about it here</a>
-			</p>
 
 		</div>
 	</div>
@@ -212,6 +213,9 @@ $('#game_board').on('click', '.small_cell', function() {
 
 	/**/
 	// Check if victorious?
+
+	// This block can perhaps be very elegantly written
+	// I just wanted to get it over with :) Would be glad if someone can fix this
 
 	if ($(this).closest('table').data('victorious') == undefined) {
 		all_tds = $(this).closest('table').find('td');
@@ -400,11 +404,15 @@ function update_side_panel() {
 $('#show_home').on('click', function() {
 	$('#rules_board').hide();
 	$('#game_board').show();
+	$('#show_home').addClass('active');
+	$('#show_help').removeClass('active');
 });
 
 $('#show_help').on('click', function() {
 	$('#rules_board').show();
 	$('#game_board').hide();
+	$('#show_home').removeClass('active');
+	$('#show_help').addClass('active');
 });
 
 $('#btn_start_game').on('click', function() {
