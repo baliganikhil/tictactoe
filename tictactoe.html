@@ -1,0 +1,417 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css">
+	<script type="text/javascript" src="jquery-1.10.1.min.js"></script>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="#">Tic Tac Toe - Reloaded</a>
+    <ul class="nav">
+      <li id="show_home" class="active"><a href="#">Home</a></li>
+      <li id="show_help"><a href="#">Help</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container-fluid">
+
+	<div class="span9">
+		<div id="game_board"></div>
+
+		<div id="rules_board" class="hide">
+			<h3>Rules</h3>
+			<ol>
+				<li>The board consists of 9 Tic Tac Toe boards.</li>
+
+				<li>When the game begins, you can make your move in any square of the board</li>
+
+				<li>However, depending on which square was selected in the previous move, the corresponding section gets highlighted. Subsequent moves have to be made in the highlighted board only.</li>
+
+				<li>Standard Tic Tac Toe rules apply per board. Person with most number of wins - well, wins...</li>
+
+				<li>Currently you and your friend have to play on the same machine...</li>
+			</ol>
+
+			Note that subsequent moves depend on the previous move. For example
+
+			<p>&nbsp;</p>
+
+			<img src="images/1.png">
+
+			<p>&nbsp;</p>
+
+			<img src="images/2.png">
+
+			<p>
+				<a href="http://mathwithbaddrawings.com/2013/06/16/ultimate-tic-tac-toe">Based on this post... Read more about it here</a>
+			</p>
+
+		</div>
+	</div>
+
+	<div class="span3 well" style="height: 100%;">
+		<h3>Current Move</h3>
+		<div id="current_symbol">O</div>
+
+		<hr>
+
+		<h3>Score</h3>
+		<div class="row" id="score_board">
+			<table class="table">
+				<tr>
+					<td>X</td>
+					<td><span id="total_x"></span></td>
+				</tr>
+
+				<tr>
+					<td>O</td>
+					<td><span id="total_o"></span></td>
+				</tr>
+			</table>
+		</div>
+
+		<hr>
+
+		<button class="btn btn-primary btn-large" id="btn_start_game">New Game</button>
+		
+		
+
+	</div>
+
+</div>
+
+
+<style type="text/css">
+	#game_board {
+		margin: 0 auto;
+	}
+
+	.big_cell {
+		height: 180px;
+		width: 180px;
+		border: solid 5px #444;
+	}
+
+	.small_cell {
+		height: 60px;
+		width: 60px;
+		border: solid 1px #444;
+		text-align: center;
+		font-size: 24px;
+	}
+
+	.active_table {
+		border: solid 5px green !important;
+		background: #cdeb8e !important; /* Old browsers */
+		background: -moz-linear-gradient(top, #cdeb8e 0%, #a5c956 100%) !important; /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cdeb8e), color-stop(100%,#a5c956)) !important; /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top, #cdeb8e 0%,#a5c956 100%) !important; /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top, #cdeb8e 0%,#a5c956 100%) !important; /* Opera 11.10+ */
+		background: -ms-linear-gradient(top, #cdeb8e 0%,#a5c956 100%) !important; /* IE10+ */
+		background: linear-gradient(to bottom, #cdeb8e 0%,#a5c956 100%) !important; /* W3C */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cdeb8e', endColorstr='#a5c956',GradientType=0 ) !important; /* IE6-9 */
+	}
+
+	.won_o {
+		background: #BBFFFF;
+	}
+
+	.won_x {
+		background: #FFB8A2;
+	}
+
+	.done_o {
+		color: blue;
+	}
+
+	.done_x {
+		color: red;
+	}
+
+	#current_symbol {
+		font-size: 36px;
+		text-align: center;
+	}
+
+	#score_board {
+		font-size: 36px;
+	}
+</style>
+
+<script type="text/javascript">
+
+var cur_symbol = "O";
+var cur_table = "";
+var total_x = 0;
+var total_o = 0;
+
+function init_board() {
+
+	cur_symbol = "O";
+	cur_table = "";
+	total_x = 0;
+	total_o = 0;
+
+	var html = '<table id="big_board">';
+
+	for (var i = 0; i < 3; i++) {
+		html += '<tr>';
+
+		for (var j = 0; j < 3; j++) {
+			html += '<td class="big_cell" data-cell="' + ((3 * i) + j) + '">';
+
+			html += '<table class="small_table" data-cell="' + ((3 * i) + j) + '" id="small_table_' + ((3 * i) + j) + '">';
+
+			for (var k = 0; k < 3; k++) {
+				html += '<tr>';
+
+				for (var l = 0; l < 3; l++) {
+					html += '<td data-cell="' + ((3 * k) + l) + '" class="small_cell" data-value="' + ((3 * k) + l) + '"></td>'
+				}
+
+				html += '</tr>';
+			}
+
+			html += '</table>';
+
+			html += '</td>';
+		}
+
+		html += '</tr>';
+	}
+
+	html += '</table>';
+
+	$('#game_board').html(html);
+	update_side_panel();
+
+}
+
+init_board();
+
+
+
+$('#game_board').on('click', '.small_cell', function() {
+
+	var this_table = $(this).closest('.small_table').data('cell');
+
+	if (cur_table !== "" && this_table !== cur_table) {
+		return;
+	}
+
+	if ($(this).data('value') == 'X' || $(this).data('value') == 'O') {
+		return;
+	}
+
+	var this_cell = $(this).data('cell');
+
+	$(this).data('value', cur_symbol);
+	$(this).html(cur_symbol);
+
+	/**/
+	// Check if victorious?
+
+	if ($(this).closest('table').data('victorious') == undefined) {
+		all_tds = $(this).closest('table').find('td');
+
+		if (($(all_tds[0]).data('value') == $(all_tds[1]).data('value')) && ($(all_tds[1]).data('value') == $(all_tds[2]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[0]).addClass('done_o')
+				$(all_tds[1]).addClass('done_o');
+				$(all_tds[2]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[0]).addClass('done_x')
+				$(all_tds[1]).addClass('done_x');
+				$(all_tds[2]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[3]).data('value') == $(all_tds[4]).data('value')) && ($(all_tds[4]).data('value') == $(all_tds[5]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[3]).addClass('done_o');
+				$(all_tds[4]).addClass('done_o');
+				$(all_tds[5]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[3]).addClass('done_x')
+				$(all_tds[4]).addClass('done_x');
+				$(all_tds[5]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[6]).data('value') == $(all_tds[7]).data('value')) && ($(all_tds[7]).data('value') == $(all_tds[8]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[6]).addClass('done_o');
+				$(all_tds[7]).addClass('done_o');
+				$(all_tds[8]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[6]).addClass('done_x')
+				$(all_tds[7]).addClass('done_x');
+				$(all_tds[8]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[0]).data('value') == $(all_tds[3]).data('value')) && ($(all_tds[3]).data('value') == $(all_tds[6]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[0]).addClass('done_o');
+				$(all_tds[3]).addClass('done_o');
+				$(all_tds[6]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[0]).addClass('done_x')
+				$(all_tds[3]).addClass('done_x');
+				$(all_tds[6]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[1]).data('value') == $(all_tds[4]).data('value')) && ($(all_tds[4]).data('value') == $(all_tds[7]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[1]).addClass('done_o');
+				$(all_tds[4]).addClass('done_o');
+				$(all_tds[7]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[1]).addClass('done_x')
+				$(all_tds[4]).addClass('done_x');
+				$(all_tds[7]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[2]).data('value') == $(all_tds[5]).data('value')) && ($(all_tds[5]).data('value') == $(all_tds[8]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[2]).addClass('done_o');
+				$(all_tds[5]).addClass('done_o');
+				$(all_tds[8]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[2]).addClass('done_x')
+				$(all_tds[5]).addClass('done_x');
+				$(all_tds[8]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[0]).data('value') == $(all_tds[4]).data('value')) && ($(all_tds[4]).data('value') == $(all_tds[8]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[0]).addClass('done_o');
+				$(all_tds[4]).addClass('done_o');
+				$(all_tds[8]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[0]).addClass('done_x')
+				$(all_tds[4]).addClass('done_x');
+				$(all_tds[8]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		} else if (($(all_tds[2]).data('value') == $(all_tds[4]).data('value')) && ($(all_tds[4]).data('value') == $(all_tds[6]).data('value'))) {
+			$(this).closest('table').data('victorious', 'true');
+			$(this).closest('table').data('winner', cur_symbol);
+
+			if (cur_symbol == 'O') {
+				$(all_tds[2]).addClass('done_o');
+				$(all_tds[4]).addClass('done_o');
+				$(all_tds[6]).addClass('done_o');
+				total_o += 1;
+				$(this).closest('table').addClass('won_o')
+			} else {
+				$(all_tds[2]).addClass('done_x')
+				$(all_tds[4]).addClass('done_x');
+				$(all_tds[6]).addClass('done_x');
+				total_x += 1;
+				$(this).closest('table').addClass('won_x')
+			}
+		}
+	}
+
+	/**/
+
+	cur_table = this_cell;
+
+	cur_symbol = cur_symbol == 'O' ? 'X' : 'O';
+
+	$('.small_table').removeClass('active_table');
+	$('#small_table_' + cur_table).addClass('active_table');
+
+	check_if_all_occupied(cur_table);
+	update_side_panel();
+
+});
+
+function check_if_all_occupied(index) {
+	all_tds = $('#small_table_' + index).find('td');
+
+	var empty_cell = false;
+
+	for (var i = 0; i < 9; i++) {		
+
+		if ($(all_tds[i]).data('value') == 'X' || $(all_tds[i]).data('value') == 'O') {
+			empty_cell = false;			
+		} else {
+			empty_cell = true;
+			break;
+		}
+	}
+
+	if (!empty_cell) {
+		cur_table = "";
+		$('.active_table').removeClass('active_table');
+		return true;
+	}
+}
+
+function update_side_panel() {
+	$('#current_symbol').html(cur_symbol);
+	$('#total_x').html(total_x);
+	$('#total_o').html(total_o);
+}
+
+$('#show_home').on('click', function() {
+	$('#rules_board').hide();
+	$('#game_board').show();
+});
+
+$('#show_help').on('click', function() {
+	$('#rules_board').show();
+	$('#game_board').hide();
+});
+
+$('#btn_start_game').on('click', function() {
+	init_board();
+});
+
+</script>
+
+</body>
+</html>
