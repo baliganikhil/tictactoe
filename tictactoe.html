@@ -80,6 +80,8 @@
 
 		<hr>
 
+		<div class="alert alert-success">You can click in any board</div>
+
 		<h3>Score</h3>
 		<div class="row" id="score_board">
 			<table class="table">
@@ -467,6 +469,12 @@ function update_side_panel() {
 	$('#current_symbol').html(cur_symbol);
 	$('#total_x').html(total_x);
 	$('#total_o').html(total_o);
+
+	if (cur_table === "") {
+		$('.alert').show();
+	} else {
+		$('.alert').hide();
+	}
 }
 
 $('#show_home').on('click', function() {
