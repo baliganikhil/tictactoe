@@ -10,8 +10,9 @@
     <a class="brand" href="#">Ultimate Tic Tac Toe</a>
     <ul class="nav">
       <li><a href="http://nikhilbaliga.com">Home</a></li>
-      <li id="show_home" class="active"><a href="#">Game</a></li>
-      <li id="show_help"><a href="#">Help</a></li>
+      <li id="show_home" class="active menu_item"><a href="#">Game</a></li>
+      <li id="show_options" class="menu_item"><a href="#">Options</a></li>
+      <li id="show_help" class="menu_item"><a href="#">Help</a></li>
     </ul>
   </div>
 </div>
@@ -19,9 +20,21 @@
 <div class="container-fluid">
 
 	<div class="span9">
-		<div id="game_board"></div>
+		<div id="game_board" class="board"></div>
 
-		<div id="rules_board" class="hide">
+		<div id="options_board" class="board hide">
+			<h3>Options</h3>
+			<label>
+				<input type="checkbox" id="victorious_board_anywhere">
+				If you are sent to a board that's already been won, you may go wherever you like
+			</label>
+
+			<hr>
+
+			<button class="btn" id="save_button">Save</button>
+		</div>
+
+		<div id="rules_board" class="board hide">
 			<h3>Rules</h3>
 			<ol>
 				<li>The board consists of 9 Tic Tac Toe boards.</li>
@@ -186,6 +199,16 @@ var cur_symbol = "O";
 var cur_table = "";
 var total_x = 0;
 var total_o = 0;
+
+var victorious_board_anywhere = false;
+
+function init_victorious_board_anywhere_rule() {
+	if ($('#victorious_board_anywhere').is(':checked')) {
+		victorious_board_anywhere = true;
+	} else {
+		victorious_board_anywhere = false;
+	}
+}
 
 function init_board() {
 
@@ -396,7 +419,7 @@ $('#game_board').on('click', '.small_cell', function() {
 				$(this).closest('table').addClass('won_x')
 			}
 		}
-	}
+	} 
 
 	/**/
 
@@ -408,6 +431,12 @@ $('#game_board').on('click', '.small_cell', function() {
 	$('#small_table_' + cur_table).addClass('active_table');
 
 	check_if_all_occupied(cur_table);
+
+	if (victorious_board_anywhere && $('#small_table_' + cur_table).data('victorious') === 'true') {
+		cur_table = "";
+		$('.active_table').removeClass('active_table');
+	}
+
 	update_side_panel();
 
 });
@@ -441,17 +470,29 @@ function update_side_panel() {
 }
 
 $('#show_home').on('click', function() {
-	$('#rules_board').hide();
+	$('.board').hide();
 	$('#game_board').show();
+	$('.menu_item').removeClass('active');
 	$('#show_home').addClass('active');
-	$('#show_help').removeClass('active');
 });
 
 $('#show_help').on('click', function() {
+	$('.board').hide();
 	$('#rules_board').show();
-	$('#game_board').hide();
-	$('#show_home').removeClass('active');
+	$('.menu_item').removeClass('active');
 	$('#show_help').addClass('active');
+});
+
+$('#show_options').on('click', function() {
+	$('.board').hide();
+	$('.menu_item').removeClass('active');
+	$('#show_options').addClass('active');
+	$('#options_board').show();
+});
+
+$('#save_button').on('click', function() {
+	init_victorious_board_anywhere_rule();
+	$('#show_home').click();
 });
 
 $('#btn_start_game').on('click', function() {
